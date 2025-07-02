@@ -1,0 +1,58 @@
+# Remove the version line
+services:
+  # Laravel App
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dragena-app
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ./:/var/www
+    networks:
+      - dragena-network
+    depends_on:
+      - db
+
+  # Nginx Service
+  nginx:
+    image: nginx:alpine
+    container_name: dragena-nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+    networks:
+      - dragena-network
+    depends_on:
+      - app
+
+  # MySQL Service
+  db:
+    image: mysql:8.0
+    container_name: dragena-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-dragena}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-password}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-password}
+      MYSQL_USER: ${DB_USERNAME:-dragena}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - dragena-data:/var/lib/mysql
+    networks:
+      - dragena-network
+    ports:
+      - "3306:3306"
+
+networks:
+  dragena-network:
+    driver: bridge
+
+volumes:
+  dragena-data:
+    driver: local
