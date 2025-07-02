@@ -21,7 +21,7 @@ services:
     container_name: dragena-nginx
     restart: unless-stopped
     ports:
-      - "8089:8089"
+      - "8084:8084"
     volumes:
       - ./:/var/www
       - ./docker/nginx/conf.d:/etc/nginx/conf.d
