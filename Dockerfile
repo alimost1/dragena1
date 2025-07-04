@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y \
     vim \
     unzip \
     git \
+    nano \
     curl \
     libzip-dev \
     libonig-dev \
