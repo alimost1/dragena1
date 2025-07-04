@@ -1,3 +1,5 @@
+# Dockerfile
+
 FROM php:8.2-fpm
 
 # Set working directory
@@ -37,15 +39,24 @@ RUN docker-php-ext-install intl
 # Install composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Add user for laravel application
-RUN groupadd -g 1000 www
-RUN useradd -u 1000 -ms /bin/bash -g www www
+# <<< MODIFICATION START: CREATE USER WITH DYNAMIC IDs >>>
+
+# Add arguments for user/group IDs passed from docker-compose.yml
+# It defaults to 1000 if not provided.
+ARG UID=1000
+ARG GID=1000
+
+# Create the 'www' group and 'www' user with the dynamic IDs
+RUN groupadd -g ${GID} www
+RUN useradd -u ${UID} -ms /bin/bash -g www www
+
+# <<< MODIFICATION END >>>
 
 # Copy existing application directory contents
 COPY . /var/www
 
-# Copy existing application directory permissions
-COPY --chown=www:www . /var/www
+# Copy existing application directory permissions using the dynamic IDs
+COPY --chown=${UID}:${GID} . /var/www
 
 # Change current user to www
 USER www

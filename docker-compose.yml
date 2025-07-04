@@ -1,10 +1,15 @@
-# Remove the version line
+# docker-compose.yml
+
 services:
   # Laravel App
   app:
     build:
       context: .
       dockerfile: Dockerfile
+      # <<< ADD THIS 'args' SECTION TO PASS YOUR USER ID TO THE DOCKERFILE >>>
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
     container_name: dragena-app
     restart: unless-stopped
     working_dir: /var/www/
