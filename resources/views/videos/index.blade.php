@@ -45,6 +45,13 @@
                                             <a href="{{ route('videos.show', $video) }}" class="text-blue-500 hover:underline">
                                                 View Details
                                             </a>
+                                            <form method="POST" action="{{ route('videos.destroy', $video) }}" class="inline ml-4" onsubmit="return confirm('Are you sure you want to delete this video? This action cannot be undone.')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-500 hover:underline">
+                                                    Delete
+                                                </button>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>

@@ -12,6 +12,9 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+// Add webhook route for n8n callbacks (outside auth middleware)
+Route::post('/webhook/n8n/callback', [VideoController::class, 'handleN8nCallback'])->name('n8n.callback');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

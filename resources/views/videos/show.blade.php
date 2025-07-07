@@ -11,9 +11,18 @@
                 <div class="p-6 text-gray-900">
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="text-lg font-medium">Video #{{ $video->id }}</h3>
-                        <a href="{{ route('videos.index') }}" class="text-blue-500 hover:underline">
-                            Back to Videos
-                        </a>
+                        <div class="flex space-x-4">
+                            <a href="{{ route('videos.index') }}" class="text-blue-500 hover:underline">
+                                Back to Videos
+                            </a>
+                            <form method="POST" action="{{ route('videos.destroy', $video) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this video? This action cannot be undone.')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+                                    Delete Video
+                                </button>
+                            </form>
+                        </div>
                     </div>
 
                     <div class="mb-6">
@@ -50,24 +59,39 @@
                     @elseif ($video->status === 'completed')
                         <div class="bg-gray-100 p-4 rounded-lg mb-6">
                             <h4 class="font-medium mb-4">Your Video</h4>
-                            <div class="aspect-w-16 aspect-h-9">
+                            <div class="aspect-w-16 aspect-h-9 bg-black rounded-lg overflow-hidden">
                                 <video 
                                     controls 
-                                    class="w-full h-auto rounded shadow-lg" 
+                                    preload="metadata"
+                                    class="w-full h-full object-contain" 
                                     poster="{{ asset('images/video-poster.jpg') }}"
+                                    controlsList="nodownload"
                                 >
                                     <source src="{{ $video->video_url }}" type="video/mp4">
+                                    <source src="{{ $video->video_url }}" type="video/webm">
                                     Your browser does not support the video tag.
                                 </video>
                             </div>
-                            <div class="mt-4 flex justify-center">
-                                <a 
-                                    href="{{ $video->video_url }}" 
-                                    download 
-                                    class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                                >
-                                    Download Video
-                                </a>
+                            <div class="mt-4 flex justify-between items-center">
+                                <div class="text-sm text-gray-600">
+                                    <p><strong>Duration:</strong> Auto-detected</p>
+                                    <p><strong>Format:</strong> MP4</p>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button 
+                                        onclick="document.querySelector('video').currentTime = 0; document.querySelector('video').play()"
+                                        class="px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600"
+                                    >
+                                        Replay
+                                    </button>
+                                    <a 
+                                        href="{{ $video->video_url }}" 
+                                        download 
+                                        class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                    >
+                                        Download Video
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     @else
@@ -86,6 +110,23 @@
                             </div>
                         </div>
                     @endif
+                    
+                    <!-- Delete Video Section -->
+                    <div class="mt-8 pt-6 border-t border-gray-200">
+                        <div class="bg-red-50 p-4 rounded-lg">
+                            <h4 class="font-medium text-red-800 mb-2">Delete Video</h4>
+                            <p class="text-red-700 text-sm mb-4">
+                                Once you delete this video, it will be permanently removed and cannot be recovered.
+                            </p>
+                            <form method="POST" action="{{ route('videos.destroy', $video) }}" onsubmit="return confirm('Are you sure you want to delete this video? This action cannot be undone.')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                                    Delete Video Permanently
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
