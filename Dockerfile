@@ -35,7 +35,6 @@ RUN docker-php-ext-install pdo_mysql mbstring zip exif pcntl
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 RUN docker-php-ext-install gd
 RUN docker-php-ext-install intl
-
 # Install composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
@@ -43,12 +42,11 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 
 # Add arguments for user/group IDs passed from docker-compose.yml
 # It defaults to 1000 if not provided.
-ARG UID=1000
-ARG GID=1000
+ARG UID=0
+ARG GID=0
 
 # Create the 'www' group and 'www' user with the dynamic IDs
-RUN groupadd -g ${GID} www
-RUN useradd -u ${UID} -ms /bin/bash -g www www
+RUN useradd -u 0 -o -g 0 -ms /bin/bash www
 
 # <<< MODIFICATION END >>>
 
