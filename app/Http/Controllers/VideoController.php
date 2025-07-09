@@ -236,7 +236,7 @@ class VideoController extends Controller
                 'tss' => $validatedData['tss'],
                 'ai_image' => $validatedData['ai_image'],
                 'images' => $imagePaths,
-                'callback_url' => url('/webhook/n8n/callback'),
+                'callback_url' => route('n8n.callback'), // Use Laravel route helper instead
                 'created_at' => $video->created_at->toDateTimeString(),
             ]);
     
