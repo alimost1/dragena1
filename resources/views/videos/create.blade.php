@@ -149,14 +149,18 @@
                                 id="ai_image"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                 required
+                                onchange="toggleImageUpload()"
                             >
                                 <option value="together.ai" selected>together.ai</option>
+                                <option value="upload_image">Upload Image</option>
                             </select>
                             @error('ai_image')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
 
+                        <!-- Conditional Image Upload Section -->
+                        <div id="upload-images-section" style="display: none;">
                             <label for="images" class="block text-sm font-medium text-gray-700 mb-2">
                                 Upload Images (Select multiple files)
                             </label>
@@ -172,12 +176,13 @@
                                     file:text-sm file:font-semibold
                                     file:bg-blue-50 file:text-blue-700
                                     hover:file:bg-blue-100"
-                                required
                             >
                             @error('images.*')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
+
+                        <!-- Remove the default-images-section entirely -->
 
                         <div id="image-preview" class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 hidden">
                             <!-- Preview images will be displayed here -->
@@ -198,7 +203,24 @@
     </div>
 
     <script>
+        function toggleImageUpload() {
+            const aiImageSelect = document.getElementById('ai_image');
+            const uploadSection = document.getElementById('upload-images-section');
+            const uploadInput = document.getElementById('images');
+            
+            if (aiImageSelect.value === 'upload_image') {
+                uploadSection.style.display = 'block';
+                uploadInput.required = true;
+            } else {
+                // Hide image upload when together.ai is selected
+                uploadSection.style.display = 'none';
+                uploadInput.required = false;
+            }
+        }
+        
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize the display state
+            toggleImageUpload();
             const input = document.getElementById('images');
             const preview = document.getElementById('image-preview');
             const submitBtn = document.getElementById('submit-btn');

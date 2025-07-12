@@ -23,6 +23,12 @@ return [
         'auth_token' => env('N8N_AUTH_TOKEN'),
     ],
 
+    'baserow' => [
+        'api_url' => env('BASEROW_API_URL', 'https://api.baserow.io'),
+        'database_token' => env('BASEROW_DATABASE_TOKEN'),
+        'table_id' => env('BASEROW_TABLE_ID'),
+    ],
+
     'resend' => [
         'key' => env('RESEND_KEY'),
     ],

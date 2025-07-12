@@ -12,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
+use App\Services\BaserowService;
 
 class VideoController extends Controller
 {
@@ -53,7 +54,7 @@ class VideoController extends Controller
                 'generative_style' => 'required|in:hyper-realistic,artistic,cartoon,cinematic,abstract',
                 'video_type' => 'required|in:user_idea,template',
                 'tss' => 'required|in:af_alloy,other',
-                'ai_image' => 'required|string',
+                'ai_image' => 'required|string|in:together.ai,upload_image',
                 'images' => 'required|array|min:1|max:10',
                 'images.*' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120', // 5MB max
             ], [
@@ -142,6 +143,17 @@ class VideoController extends Controller
             abort(403, 'You are not authorized to view this video.');
         }
 
+        // If video is completed but no video_url, try to fetch from Baserow
+        if ($video->status === 'completed' && empty($video->video_url)) {
+            $baserowService = new BaserowService();
+            $videoUrl = $baserowService->getVideoUrl($video->id);
+            
+            if ($videoUrl) {
+                $video->update(['video_url' => $videoUrl]);
+                $video->refresh();
+            }
+        }
+
         return view('videos.show', compact('video'));
     }
 
@@ -215,38 +227,69 @@ class VideoController extends Controller
         $authToken = config('services.n8n.auth_token');
         $webhookUrl = config('services.n8n.webhook_url');
         
-        if (!$authToken || !$webhookUrl) {
-            throw new \Exception('n8n service configuration is missing.');
+        if (!$authToken) {
+            throw new \Exception('n8n auth token is not configured. Please set N8N_AUTH_TOKEN in your .env file.');
         }
+        
+        if (!$webhookUrl) {
+            throw new \Exception('n8n webhook URL is not configured. Please set N8N_WEBHOOK_URL in your .env file.');
+        }
+        
+        // Log the configuration for debugging
+        Log::info('Sending to n8n webhook', [
+            'webhook_url' => $webhookUrl,
+            'video_id' => $video->id,
+            'has_auth_token' => !empty($authToken)
+        ]);
     
-        $response = Http::timeout(30)
-            ->withHeaders([
-                'Authorization' => 'Bearer ' . $authToken,
-                'Content-Type' => 'application/json',
-            ])
-            ->post($webhookUrl, [
+        try {
+            $response = Http::timeout(30)
+                ->withHeaders([
+                    'Authorization' => 'Bearer ' . $authToken,
+                    'Content-Type' => 'application/json',
+                ])
+                ->post($webhookUrl, [
+                    'video_id' => $video->id,
+                    'user_id' => $user->id,
+                    'user_email' => $user->email,
+                    'title' => $validatedData['title'],
+                    'main_topic' => $validatedData['main_topic'],
+                    'duration' => (int) $validatedData['duration'],
+                    'generative_style' => $validatedData['generative_style'],
+                    'video_type' => $validatedData['video_type'],
+                    'tss' => $validatedData['tss'],
+                    'ai_image' => $validatedData['ai_image'],
+                    'images' => $imagePaths,
+                    'callback_url' => url('/webhook/n8n/callback'), // Use url() helper instead of route()
+                    'created_at' => $video->created_at->toDateTimeString(),
+                ]);
+        
+            if (!$response->successful()) {
+                $errorMessage = sprintf(
+                    'n8n service returned %d: %s. URL: %s', 
+                    $response->status(), 
+                    $response->body(),
+                    $webhookUrl
+                );
+                
+                Log::error('n8n webhook failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                    'url' => $webhookUrl
+                ]);
+                
+                throw new \Exception($errorMessage);
+            }
+            
+            Log::info('n8n webhook successful', [
                 'video_id' => $video->id,
-                'user_id' => $user->id,
-                'user_email' => $user->email,
-                'title' => $validatedData['title'],
-                'main_topic' => $validatedData['main_topic'],
-                'duration' => (int) $validatedData['duration'],
-                'generative_style' => $validatedData['generative_style'],
-                'video_type' => $validatedData['video_type'],
-                'tss' => $validatedData['tss'],
-                'ai_image' => $validatedData['ai_image'],
-                'images' => $imagePaths,
-                'callback_url' => route('n8n.callback'), // Use Laravel route helper instead
-                'created_at' => $video->created_at->toDateTimeString(),
+                'response_status' => $response->status()
             ]);
-    
-        if (!$response->successful()) {
-            $errorMessage = sprintf(
-                'n8n service returned %d: %s', 
-                $response->status(), 
-                $response->body()
-            );
-            throw new \Exception($errorMessage);
+            
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            throw new \Exception('Failed to connect to n8n service. Please check if n8n is running and accessible at: ' . $webhookUrl);
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            throw new \Exception('n8n request failed: ' . $e->getMessage());
         }
     }
 
