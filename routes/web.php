@@ -22,6 +22,9 @@ Route::middleware('auth')->group(function () {
 
     // Video routes
     Route::resource('videos', VideoController::class);
+    Route::get('/videos/latest', [VideoController::class, 'latest'])->name('videos.latest');
 });
+
+Route::get('/baserow-video', [VideoController::class, 'showBaserowVideo'])->name('baserow.video');
 
 require __DIR__.'/auth.php';

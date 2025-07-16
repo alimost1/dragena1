@@ -158,6 +158,31 @@ class VideoController extends Controller
     }
 
     /**
+     * Display the latest video for the authenticated user.
+     */
+    public function latest(): View
+    {
+        $user = Auth::user();
+        $video = Video::where('user_id', $user->id)->latest()->first();
+
+        if (!$video) {
+            return redirect()->route('videos.index')->with('error', 'No videos found.');
+        }
+
+        // If video is completed but no video_url, try to fetch from Baserow
+        if ($video->status === 'completed' && empty($video->video_url)) {
+            $baserowService = new \App\Services\BaserowService();
+            $videoUrl = $baserowService->getVideoUrl($video->id);
+            if ($videoUrl) {
+                $video->update(['video_url' => $videoUrl]);
+                $video->refresh();
+            }
+        }
+
+        return view('videos.show', compact('video'));
+    }
+
+    /**
      * Delete the specified video.
      */
     public function destroy(Video $video): RedirectResponse
@@ -359,5 +384,24 @@ class VideoController extends Controller
             
             return response()->json(['error' => 'Internal server error'], 500);
         }
+    }
+
+    public function showBaserowVideo()
+    {
+        $baserowService = new \App\Services\BaserowService();
+
+        // Directly fetch row 126 from table 313
+        $response = \Illuminate\Support\Facades\Http::withHeaders([
+            'Authorization' => 'Token ' . config('services.baserow.database_token'),
+            'Content-Type' => 'application/json',
+        ])->get(config('services.baserow.api_url') . '/api/database/rows/table/313/126/');
+
+        $videoUrl = null;
+        if ($response->successful()) {
+            $data = $response->json();
+            $videoUrl = $data['field_2611'] ?? null; // Use field_2611 for video
+        }
+
+        return view('videos.baserow', compact('videoUrl'));
     }
 }
