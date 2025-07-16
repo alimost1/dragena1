@@ -5,13 +5,12 @@ use App\Models\Video;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Validation\ValidationException;
 use App\Services\BaserowService;
 
 class VideoController extends Controller
@@ -323,6 +322,14 @@ class VideoController extends Controller
      */
     public function handleN8nCallback(Request $request): JsonResponse
     {
+        // Log that the webhook was received
+        Log::info('n8n webhook callback received', [
+            'method' => $request->method(),
+            'url' => $request->url(),
+            'headers' => $request->headers->all(),
+            'body' => $request->all()
+        ]);
+        
         try {
             // Validate webhook data
             $validatedData = $request->validate([
