@@ -395,18 +395,27 @@ class VideoController extends Controller
 
     public function showBaserowVideo()
     {
-        $baserowService = new \App\Services\BaserowService();
+        $baserowApiUrl = config('services.baserow.api_url');
+        $baserowToken = config('services.baserow.database_token');
+        $tableId = 313; // Table ID
 
-        // Directly fetch row 126 from table 313
+        // Fetch the latest row where 'Final Video URL' is not empty (sorted by id desc, limit 1)
         $response = \Illuminate\Support\Facades\Http::withHeaders([
-            'Authorization' => 'Token ' . config('services.baserow.database_token'),
+            'Authorization' => 'Token ' . $baserowToken,
             'Content-Type' => 'application/json',
-        ])->get(config('services.baserow.api_url') . '/api/database/rows/table/313/126/');
+        ])->get("{$baserowApiUrl}/api/database/rows/table/{$tableId}/", [
+            'user_field_names' => true,
+            'order_by' => '-id',
+            'size' => 1,
+            'filter__Final Video URL__not_empty' => 'true',
+        ]);
 
         $videoUrl = null;
         if ($response->successful()) {
             $data = $response->json();
-            $videoUrl = $data['field_2611'] ?? null; // Use field_2611 for video
+            if (!empty($data['results'][0]['Final Video URL'])) {
+                $videoUrl = $data['results'][0]['Final Video URL'];
+            }
         }
 
         return view('videos.baserow', compact('videoUrl'));
