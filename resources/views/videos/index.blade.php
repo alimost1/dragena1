@@ -41,11 +41,16 @@
                                                 <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">Failed</span>
                                             @endif
                                         </div>
-                                        <div class="mt-4">
+                                        <div class="mt-4 flex space-x-3">
                                             <a href="{{ route('videos.show', $video) }}" class="text-blue-500 hover:underline">
                                                 View Details
                                             </a>
-                                            <form method="POST" action="{{ route('videos.destroy', $video) }}" class="inline ml-4" onsubmit="return confirm('Are you sure you want to delete this video? This action cannot be undone.')">
+                                            @if ($video->status === 'completed')
+                                                <a href="{{ route('videos.reel', $video) }}" class="text-green-500 hover:underline">
+                                                    View as Reel
+                                                </a>
+                                            @endif
+                                            <form method="POST" action="{{ route('videos.destroy', $video) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this video? This action cannot be undone.')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="text-red-500 hover:underline">

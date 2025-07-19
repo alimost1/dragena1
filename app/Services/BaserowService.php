@@ -21,10 +21,12 @@ class BaserowService
     public function getVideoUrl($videoId)
     {
         try {
+            // First try to find by video_id if it exists
             $response = Http::withHeaders([
                 'Authorization' => 'Token ' . $this->token,
                 'Content-Type' => 'application/json',
             ])->get("{$this->apiUrl}/api/database/rows/table/{$this->tableId}/", [
+                'user_field_names' => true,
                 'filters' => json_encode([
                     'filter_type' => 'AND',
                     'filters' => [
@@ -40,8 +42,30 @@ class BaserowService
             if ($response->successful()) {
                 $data = $response->json();
                 if (!empty($data['results'])) {
-                    // Use 'Final Video URL' field name as shown in your Baserow screenshot
                     return $data['results'][0]['Final Video URL'] ?? null;
+                }
+            }
+
+            // If no video_id field or no match, get the most recent completed video
+            $response = Http::withHeaders([
+                'Authorization' => 'Token ' . $this->token,
+                'Content-Type' => 'application/json',
+            ])->get("{$this->apiUrl}/api/database/rows/table/{$this->tableId}/", [
+                'user_field_names' => true,
+                'size' => 1,
+                'order_by' => 'id'
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                if (!empty($data['results'])) {
+                    $row = $data['results'][0];
+                    $videoUrl = $row['Final Video URL'] ?? null;
+                    
+                    if ($videoUrl) {
+                        Log::info("Found video URL for video {$videoId} from most recent Baserow row: {$videoUrl}");
+                        return $videoUrl;
+                    }
                 }
             }
 

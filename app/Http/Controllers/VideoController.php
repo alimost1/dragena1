@@ -142,16 +142,8 @@ class VideoController extends Controller
             abort(403, 'You are not authorized to view this video.');
         }
 
-        // If video is completed but no video_url, try to fetch from Baserow
-        if ($video->status === 'completed' && empty($video->video_url)) {
-            $baserowService = new BaserowService();
-            $videoUrl = $baserowService->getVideoUrl($video->id);
-            
-            if ($videoUrl) {
-                $video->update(['video_url' => $videoUrl]);
-                $video->refresh();
-            }
-        }
+        // Auto-fetch video URL if completed but missing
+        $this->autoFetchVideoUrl($video);
 
         return view('videos.show', compact('video'));
     }
@@ -168,17 +160,68 @@ class VideoController extends Controller
             return redirect()->route('videos.index')->with('error', 'No videos found.');
         }
 
-        // If video is completed but no video_url, try to fetch from Baserow
+        // Auto-fetch video URL if completed but missing
+        $this->autoFetchVideoUrl($video);
+
+        return view('videos.show', compact('video'));
+    }
+
+    /**
+     * Display the video in reel format.
+     */
+    public function showReel(Video $video): View
+    {
+        // Ensure the user can only view their own videos
+        if ($video->user_id !== Auth::id()) {
+            abort(403, 'You are not authorized to view this video.');
+        }
+
+        // Auto-fetch video URL if completed but missing
+        $this->autoFetchVideoUrl($video);
+
+        return view('videos.reel', compact('video'));
+    }
+
+    /**
+     * Auto-fetch video URL from Baserow if video is completed but missing URL.
+     */
+    private function autoFetchVideoUrl(Video $video): void
+    {
         if ($video->status === 'completed' && empty($video->video_url)) {
-            $baserowService = new \App\Services\BaserowService();
+            $baserowService = new BaserowService();
             $videoUrl = $baserowService->getVideoUrl($video->id);
+            
             if ($videoUrl) {
                 $video->update(['video_url' => $videoUrl]);
                 $video->refresh();
+                Log::info("Auto-fetched video URL for video {$video->id}: {$videoUrl}");
+            } else {
+                Log::warning("No video URL found in Baserow for completed video {$video->id}");
             }
         }
+    }
 
-        return view('videos.show', compact('video'));
+    /**
+     * Manually sync video URL from Baserow.
+     */
+    public function syncVideo(Video $video): RedirectResponse
+    {
+        // Ensure the user can only sync their own videos
+        if ($video->user_id !== Auth::id()) {
+            abort(403, 'You are not authorized to sync this video.');
+        }
+
+        $baserowService = new BaserowService();
+        $videoUrl = $baserowService->getVideoUrl($video->id);
+        
+        if ($videoUrl) {
+            $video->update(['video_url' => $videoUrl]);
+            Log::info("Manually synced video URL for video {$video->id}: {$videoUrl}");
+            return redirect()->back()->with('success', 'Video URL synced successfully!');
+        } else {
+            Log::warning("No video URL found in Baserow for video {$video->id}");
+            return redirect()->back()->with('error', 'No video URL found. The video may still be processing.');
+        }
     }
 
     /**

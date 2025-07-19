@@ -1,0 +1,137 @@
+/* Reel Video Player Styles */
+
+.reel-video-container {
+    /* Ensure proper mobile display */
+    max-height: 70vh;
+    min-height: 300px;
+    /* Mobile-first responsive design */
+    width: 100%;
+    max-width: 350px;
+    margin: 0 auto;
+    /* Ensure video fits properly */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.reel-video-container video {
+    /* Ensure video doesn't overflow */
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .reel-video-container {
+        max-width: 100%;
+        margin: 0;
+    }
+}
+
+/* Custom video controls for mobile */
+.reel-video-container video {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Hide default video controls on mobile */
+.reel-video-container video::-webkit-media-controls {
+    display: none !important;
+}
+
+.reel-video-container video::-webkit-media-controls-panel {
+    display: none !important;
+}
+
+.reel-video-container video::-webkit-media-controls-play-button {
+    display: none !important;
+}
+
+.reel-video-container video::-webkit-media-controls-start-playback-button {
+    display: none !important;
+}
+
+/* Smooth transitions for controls */
+.reel-video-container .controls-overlay {
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Mobile-optimized touch targets */
+.reel-video-container button {
+    min-height: 44px;
+    min-width: 44px;
+}
+
+/* Custom scrollbar hiding */
+.reel-video-container::-webkit-scrollbar {
+    display: none;
+}
+
+.reel-video-container {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Fullscreen optimizations */
+.reel-video-container:fullscreen {
+    background: black;
+}
+
+.reel-video-container:fullscreen video {
+    object-fit: contain;
+}
+
+/* Landscape mode adjustments */
+@media (orientation: landscape) {
+    .reel-video-container {
+        max-height: 90vh;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .reel-video-container {
+        background: #000;
+    }
+}
+
+/* Loading animation */
+.reel-loading {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: .5;
+    }
+}
+
+/* Progress bar styling */
+.reel-progress {
+    transition: width 0.1s ease-out;
+}
+
+/* Volume indicator */
+.reel-volume-indicator {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Error state styling */
+.reel-error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Success state styling */
+.reel-success {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+} 

@@ -15,6 +15,11 @@
                             <a href="{{ route('videos.index') }}" class="text-blue-500 hover:underline">
                                 Back to Videos
                             </a>
+                            @if ($video->status === 'completed')
+                                <a href="{{ route('videos.reel', $video) }}" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+                                    View as Reel
+                                </a>
+                            @endif
                             <form method="POST" action="{{ route('videos.destroy', $video) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this video? This action cannot be undone.')">
                                 @csrf
                                 @method('DELETE')
@@ -41,7 +46,7 @@
                         </p>
                     </div>
 
-                    @if ($video->status === 'processing')
+                    @if ($video->isProcessing())
                         <div class="bg-yellow-50 p-6 rounded-lg text-center">
                             <svg class="animate-spin h-10 w-10 text-yellow-500 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -56,21 +61,23 @@
                                 Refresh Status
                             </button>
                         </div>
-                    @elseif ($video->status === 'completed')
+                    @elseif ($video->isReadyToPlay())
                         <div class="bg-gray-100 p-4 rounded-lg mb-6">
                             <h4 class="font-medium mb-4">Your Video</h4>
-                            <div class="aspect-w-16 aspect-h-9 bg-black rounded-lg overflow-hidden">
-                                <video 
-                                    controls 
-                                    preload="metadata"
-                                    class="w-full h-full object-contain" 
-                                    poster="{{ asset('images/video-poster.jpg') }}"
-                                    controlsList="nodownload"
-                                >
-                                    <source src="{{ $video->video_url }}" type="video/mp4">
-                                    <source src="{{ $video->video_url }}" type="video/webm">
-                                    Your browser does not support the video tag.
-                                </video>
+                            <div class="max-w-4xl mx-auto">
+                                <div class="aspect-w-16 aspect-h-9 bg-black rounded-lg overflow-hidden">
+                                    <video 
+                                        controls 
+                                        preload="metadata"
+                                        class="w-full h-full object-cover" 
+                                        poster="{{ asset('images/video-poster.jpg') }}"
+                                        controlsList="nodownload"
+                                    >
+                                        <source src="{{ $video->video_url }}" type="video/mp4">
+                                        <source src="{{ $video->video_url }}" type="video/webm">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                </div>
                             </div>
                             <div class="mt-4 flex justify-between items-center">
                                 <div class="text-sm text-gray-600">
@@ -92,6 +99,29 @@
                                         Download Video
                                     </a>
                                 </div>
+                            </div>
+                        </div>
+                    @elseif ($video->status === 'completed' && empty($video->video_url))
+                        <div class="bg-blue-50 p-6 rounded-lg text-center">
+                            <svg class="animate-spin h-10 w-10 text-blue-500 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <p class="text-blue-800 font-medium">Video completed! Fetching video URL...</p>
+                            <p class="text-blue-700 text-sm mt-2">Your video has been generated and we're retrieving it from storage.</p>
+                            <div class="flex space-x-3">
+                                <button 
+                                    onclick="window.location.reload()" 
+                                    class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                >
+                                    Refresh & Fetch Video
+                                </button>
+                                <form method="POST" action="{{ route('videos.sync', $video) }}" class="inline">
+                                    @csrf
+                                    <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+                                        Force Sync
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     @else

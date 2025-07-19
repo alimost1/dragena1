@@ -25,6 +25,8 @@ Route::middleware('auth')->group(function () {
     // Video routes
     Route::resource('videos', VideoController::class);
     Route::get('/videos/latest', [VideoController::class, 'latest'])->name('videos.latest');
+    Route::get('/videos/{video}/reel', [VideoController::class, 'showReel'])->name('videos.reel');
+    Route::post('/videos/{video}/sync', [VideoController::class, 'syncVideo'])->name('videos.sync');
 });
 
 Route::get('/baserow-video', [VideoController::class, 'showBaserowVideo'])->name('baserow.video');
