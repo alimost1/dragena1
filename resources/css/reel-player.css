@@ -2,16 +2,13 @@
 
 .reel-video-container {
     /* 9:16 aspect ratio with minimum 540x960 pixels */
-    aspect-ratio: 9/16;
-    min-width: 540px;
-    min-height: 960px;
-    max-width: 540px;
-    max-height: 960px;
-    margin: 0 auto;
-    /* Ensure video fits properly */
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    max-height: 80vh;
+    /* Add these if not already present or to ensure they are applied */
+    aspect-ratio: 9/16; /* Explicitly set the container's aspect ratio */
+    width: 100%;      /* Ensure it takes full width */
+    max-width: 540px; /* Or whatever max-width you prefer for the reel */
+    margin: 0 auto;   /* For centering */
+    overflow: hidden; /* Crucial for 'cover' to clip */
 }
 
 .reel-video-container video {

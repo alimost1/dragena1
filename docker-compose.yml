@@ -9,11 +9,26 @@ services:
     restart: unless-stopped
     working_dir: /var/www/
     volumes:
+      # Optimized volume mounting - exclude vendor and node_modules
       - ./:/var/www
+      - /var/www/vendor
+      - /var/www/node_modules
+      - /var/www/storage/logs
+      - /var/www/storage/framework/cache
+      - /var/www/storage/framework/sessions
+      - /var/www/storage/framework/views
+    environment:
+      - PHP_OPCACHE_ENABLE=1
+      - PHP_OPCACHE_MEMORY_CONSUMPTION=128
+      - PHP_OPCACHE_INTERNED_STRINGS_BUFFER=8
+      - PHP_OPCACHE_MAX_ACCELERATED_FILES=4000
+      - PHP_OPCACHE_REVALIDATE_FREQ=2
+      - PHP_OPCACHE_FAST_SHUTDOWN=1
     networks:
       - dragena-network
     depends_on:
       - db
+      - redis
 
   # Nginx Service
   nginx:
@@ -25,11 +40,14 @@ services:
     volumes:
       - ./:/var/www
       - ./docker/nginx/conf.d:/etc/nginx/conf.d
+      # Cache static files
+      - nginx-cache:/var/cache/nginx
     networks:
       - dragena-network
     depends_on:
       - app
-# MySQL Service
+
+  # MySQL Service
   db:
     image: mysql:8.0
     container_name: dragena-db
@@ -47,6 +65,20 @@ services:
       - dragena-network
     ports:
       - "3306:3306"
+    command: --default-authentication-plugin=mysql_native_password --innodb-buffer-pool-size=256M
+
+  # Redis Service for caching
+  redis:
+    image: redis:alpine
+    container_name: dragena-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - dragena-network
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
 
 networks:
   dragena-network:
@@ -54,4 +86,8 @@ networks:
 
 volumes:
   dragena-data:
+    driver: local
+  redis-data:
+    driver: local
+  nginx-cache:
     driver: local      
