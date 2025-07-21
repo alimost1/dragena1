@@ -76,6 +76,42 @@ class BaserowService
         }
     }
 
+    /**
+     * Fetch the 'Final Video URL' from the first row of a specific Baserow table.
+     *
+     * @param int|string $tableId
+     * @return string|null
+     */
+    public function getFirstFinalVideoUrlFromTable($tableId)
+    {
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Token ' . $this->token,
+                'Content-Type' => 'application/json',
+            ])->get("{$this->apiUrl}/api/database/rows/table/{$tableId}/", [
+                'user_field_names' => true,
+                'size' => 1,
+                'order_by' => 'id',
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                if (!empty($data['results'])) {
+                    $row = $data['results'][0];
+                    $videoUrl = $row['Final Video URL'] ?? null;
+                    if (is_string($videoUrl) && !empty($videoUrl)) {
+                        return $videoUrl;
+                    }
+                }
+            }
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Baserow API error (getFirstFinalVideoUrlFromTable): ' . $e->getMessage());
+            return null;
+        }
+    }
+
     public function updateVideoUrl($videoId, $videoUrl)
     {
         try {
