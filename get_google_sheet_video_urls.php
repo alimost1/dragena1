@@ -62,6 +62,7 @@ if (!$lastVideo) {
 }
 
 $lastVideo->video_url = $lastVideoUrl;
+$lastVideo->status = 'completed';
 $lastVideo->save();
 
 echo "Updated last video (ID: {$lastVideo->id}) with URL: {$lastVideoUrl}\n"; 
