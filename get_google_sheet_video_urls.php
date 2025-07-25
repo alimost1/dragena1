@@ -65,4 +65,10 @@ $lastVideo->video_url = $lastVideoUrl;
 $lastVideo->status = 'completed';
 $lastVideo->save();
 
-echo "Updated last video (ID: {$lastVideo->id}) with URL: {$lastVideoUrl}\n"; 
+// Refresh the model to get the latest data from database
+$lastVideo->refresh();
+
+// Debug output to confirm the update
+echo "Updated last video (ID: {$lastVideo->id}) with URL: {$lastVideoUrl}\n";
+echo "Status after update: {$lastVideo->status}\n";
+echo "Video URL after update: {$lastVideo->video_url}\n"; 
