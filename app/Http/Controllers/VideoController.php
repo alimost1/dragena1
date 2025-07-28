@@ -55,11 +55,11 @@ class VideoController extends Controller
                 'tss' => 'required|in:af_alloy,other',
                 'ai_image' => 'required|string|in:together.ai,upload_image',
                 'images' => 'required|array|min:1|max:10',
-                'images.*' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120', // 5MB max
+                'images.*' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:102400', // 100MB max
             ], [
                 'images.required' => 'Please select at least one image.',
                 'images.max' => 'You can upload a maximum of 10 images.',
-                'images.*.max' => 'Each image must be smaller than 5MB.',
+                'images.*.max' => 'Each image must be smaller than 100MB.',
                 'images.*.mimes' => 'Only JPEG, PNG, JPG, GIF, and WebP images are allowed.',
             ]);
         } catch (ValidationException $e) {
