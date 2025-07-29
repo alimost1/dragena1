@@ -55,10 +55,10 @@ class VideoController extends Controller
                 'tss' => 'required|in:af_alloy,other',
                 'ai_image' => 'required|string|in:together.ai,upload_image',
                 'language' => 'required|in:english,arabic,french',
-                'images' => 'required|array|min:1|max:10',
-                'images.*' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240', // 10MB max
+                'images' => $request->input('ai_image') === 'upload_image' ? 'required|array|min:1|max:10' : 'nullable|array',
+                'images.*' => $request->input('ai_image') === 'upload_image' ? 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240' : 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
             ], [
-                'images.required' => 'Please select at least one image.',
+                'images.required' => 'Please select at least one image when using upload_image option.',
                 'images.max' => 'You can upload a maximum of 10 images.',
                 'images.*.max' => 'Each image must be smaller than 10MB.',
                 'images.*.mimes' => 'Only JPEG, PNG, JPG, GIF, and WebP images are allowed.',
@@ -98,8 +98,11 @@ class VideoController extends Controller
             ]);
     
             try {
-                // Store images with better organization
-                $imagePaths = $this->storeImages($request->file('images'), $video->id);
+                // Store images with better organization (only if images are uploaded)
+                $imagePaths = [];
+                if ($request->hasFile('images') && $validatedData['ai_image'] === 'upload_image') {
+                    $imagePaths = $this->storeImages($request->file('images'), $video->id);
+                }
     
                 // Send request to n8n webhook with all form data
                 $this->sendToN8nWebhook($video, $user, $imagePaths, $validatedData);

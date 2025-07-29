@@ -243,6 +243,21 @@
             const input = document.getElementById('images');
             const preview = document.getElementById('image-preview');
             const submitBtn = document.getElementById('submit-btn');
+            const aiImageSelect = document.getElementById('ai_image');
+
+            // Enable submit button if together.ai is selected
+            function updateSubmitButton() {
+                if (aiImageSelect.value === 'together.ai') {
+                    submitBtn.disabled = false;
+                } else if (aiImageSelect.value === 'upload_image') {
+                    submitBtn.disabled = input.files.length === 0;
+                }
+            }
+
+            // Update submit button state when AI image selection changes
+            aiImageSelect.addEventListener('change', function() {
+                updateSubmitButton();
+            });
 
             input.addEventListener('change', function() {
                 preview.innerHTML = '';
@@ -269,10 +284,15 @@
                         reader.readAsDataURL(file);
                     });
                 } else {
-                    submitBtn.disabled = true;
+                    if (aiImageSelect.value === 'upload_image') {
+                        submitBtn.disabled = true;
+                    }
                     preview.classList.add('hidden');
                 }
             });
+
+            // Initialize submit button state
+            updateSubmitButton();
         });
     </script>
 </x-app-layout>
