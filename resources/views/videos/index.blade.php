@@ -31,6 +31,10 @@
                                         <div class="text-sm text-gray-600 mb-2">
                                             Created: {{ $video->created_at->format('M d, Y H:i') }}
                                         </div>
+                                        <div class="text-sm text-gray-600 mb-2">
+                                            Language: 
+                                            <span class="capitalize">{{ $video->language }}</span>
+                                        </div>
                                         <div class="mb-2">
                                             Status: 
                                             @if ($video->status === 'processing')

@@ -16,6 +16,7 @@ class Video extends Model
      */
     protected $fillable = [
         'user_id',
+        'language',
         'status',
         'video_url',
         'error_message',

@@ -21,6 +21,11 @@ return [
     'n8n' => [
         'webhook_url' => env('N8N_WEBHOOK_URL'),
         'auth_token' => env('N8N_AUTH_TOKEN'),
+        'webhook_urls' => [
+            'english' => env('N8N_WEBHOOK_URL_ENGLISH', env('N8N_WEBHOOK_URL')),
+            'arabic' => env('N8N_WEBHOOK_URL_ARABIC'),
+            'french' => env('N8N_WEBHOOK_URL_FRENCH'),
+        ],
     ],
 
     'baserow' => [

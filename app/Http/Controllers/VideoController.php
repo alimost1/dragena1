@@ -54,12 +54,13 @@ class VideoController extends Controller
                 'video_type' => 'required|in:user_idea,template',
                 'tss' => 'required|in:af_alloy,other',
                 'ai_image' => 'required|string|in:together.ai,upload_image',
+                'language' => 'required|in:english,arabic,french',
                 'images' => 'required|array|min:1|max:10',
-                'images.*' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:102400', // 100MB max
+                'images.*' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240', // 10MB max
             ], [
                 'images.required' => 'Please select at least one image.',
                 'images.max' => 'You can upload a maximum of 10 images.',
-                'images.*.max' => 'Each image must be smaller than 100MB.',
+                'images.*.max' => 'Each image must be smaller than 10MB.',
                 'images.*.mimes' => 'Only JPEG, PNG, JPG, GIF, and WebP images are allowed.',
             ]);
         } catch (ValidationException $e) {
@@ -85,6 +86,7 @@ class VideoController extends Controller
             // Create video record with validated data
             $video = Video::create([
                 'user_id' => $user->id,
+                'language' => $validatedData['language'],
                 'title' => $validatedData['title'],
                 'main_topic' => $validatedData['main_topic'],
                 'duration' => (int) $validatedData['duration'],
@@ -292,14 +294,16 @@ class VideoController extends Controller
     private function sendToN8nWebhook(Video $video, $user, array $imagePaths, array $validatedData): void
     {
         $authToken = config('services.n8n.auth_token');
-        $webhookUrl = config('services.n8n.webhook_url');
+        $language = $validatedData['language'];
+        $webhookUrls = config('services.n8n.webhook_urls');
+        $webhookUrl = $webhookUrls[$language] ?? config('services.n8n.webhook_url');
         
         if (!$authToken) {
             throw new \Exception('n8n auth token is not configured. Please set N8N_AUTH_TOKEN in your .env file.');
         }
         
         if (!$webhookUrl) {
-            throw new \Exception('n8n webhook URL is not configured. Please set N8N_WEBHOOK_URL in your .env file.');
+            throw new \Exception("n8n webhook URL for language '{$language}' is not configured. Please set N8N_WEBHOOK_URL_{$language} in your .env file.");
         }
         
         // Log the configuration for debugging
@@ -319,6 +323,7 @@ class VideoController extends Controller
                     'video_id' => $video->id,
                     'user_id' => $user->id,
                     'user_email' => $user->email,
+                    'language' => $validatedData['language'],
                     'title' => $validatedData['title'],
                     'main_topic' => $validatedData['main_topic'],
                     'duration' => (int) $validatedData['duration'],

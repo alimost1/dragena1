@@ -35,6 +35,10 @@
                             <strong>Created:</strong> {{ $video->created_at->format('M d, Y H:i') }}
                         </p>
                         <p class="text-sm text-gray-600 mb-2">
+                            <strong>Language:</strong> 
+                            <span class="capitalize">{{ $video->language }}</span>
+                        </p>
+                        <p class="text-sm text-gray-600 mb-2">
                             <strong>Status:</strong> 
                             @if ($video->status === 'processing')
                                 <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">Processing</span>

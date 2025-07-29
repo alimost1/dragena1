@@ -141,6 +141,25 @@
                         </div>
 
                         <div>
+                            <label for="language" class="block text-sm font-medium text-gray-700 mb-2">
+                                Language
+                            </label>
+                            <select 
+                                name="language" 
+                                id="language"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                required
+                            >
+                                <option value="english" selected>English</option>
+                                <option value="arabic">Arabic</option>
+                                <option value="french">French</option>
+                            </select>
+                            @error('language')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
                             <label for="ai_image" class="block text-sm font-medium text-gray-700 mb-2">
                                 AI Image
                             </label>
