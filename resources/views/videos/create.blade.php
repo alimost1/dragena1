@@ -133,7 +133,10 @@
                                 required
                             >
                                 <option value="af_alloy" selected>af_alloy</option>
-                                <option value="other">Other</option>
+                                <option value="Ghizlane - Moroccan Darija Dialect" >Ghizlane - Moroccan Darija Dialect</option>
+                                <option value="Ghawi">Ghawi</option>
+                                <option value="Ghawi">Léo – French pro voiceover</option>
+                                
                             </select>
                             @error('tss')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
