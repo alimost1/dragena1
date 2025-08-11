@@ -52,7 +52,7 @@ class VideoController extends Controller
                 'duration' => 'required|in:8,10,15,30,60',
                 'generative_style' => 'required|in:hyper-realistic,artistic,cartoon,cinematic,abstract',
                 'video_type' => 'required|in:user_idea,template',
-                'tss' => 'required|in:af_alloy,other',
+                'tss' => 'required|in:af_alloy,ghizlane_moroccan,ghawi,leo_french',
                 'ai_image' => 'required|string|in:together.ai,upload_image',
                 'language' => 'required|in:english,arabic,french',
                 'images' => $request->input('ai_image') === 'upload_image' ? 'required|array|min:1|max:10' : 'nullable|array',
